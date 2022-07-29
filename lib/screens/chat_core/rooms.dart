@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../login.dart';
 import 'chat.dart';
 import 'users.dart';
@@ -56,6 +58,10 @@ class _RoomsPageState extends State<RoomsPage> {
       backgroundColor: Colors.lightBlue,
       appBar: (!widget.secondVersion) ? AppBar(
         actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _user == null ? null : logout,
+          ),
           // Padding(
           //   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
           //   child: ElevatedButton(
@@ -79,11 +85,13 @@ class _RoomsPageState extends State<RoomsPage> {
 
         ],
         leading: IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: _user == null ? null : logout,
-        ),
+            onPressed: (){
+              Get.back();
+              },
+            icon: const Icon(Icons.arrow_back)),
         systemOverlayStyle: SystemUiOverlayStyle.light,
         title: const Text('Circles'),
+
       ) : null,
       body: _user == null
           ? Container(
@@ -128,55 +136,75 @@ class _RoomsPageState extends State<RoomsPage> {
                   itemBuilder: (context, index) {
                     final room = snapshot.data![index];
 
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ChatPage(
-                              room: room,
-                              groupChat: room.type== types.RoomType.group,
+                    if((room.metadata == null) || (room.metadata!["isChildCircle"] == null) || (room.metadata!["isChildCircle"] == false) ){
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => ChatPage(
+                                room: room,
+                                groupChat: room.type == types.RoomType.group,
+                              ),
                             ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  _buildAvatar(room),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        room.name ?? 'no name',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                      FutureBuilder(
+                                        future: fetchLastMsg(room),
+                                        builder: (BuildContext context,
+                                            AsyncSnapshot snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const Text(
+                                              "Loading",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            );
+                                          }
+
+                                          return Text(
+                                            snapshot.data!,
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                _buildAvatar(room),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(room.name ?? 'no name', style: TextStyle(color: Colors.white,fontSize: 18, fontWeight: FontWeight.bold),),
-                                    const SizedBox(height: 10,),
-                                    FutureBuilder(
-                                      future: fetchLastMsg(room),
-                                      builder: (BuildContext context,AsyncSnapshot snapshot){
-                                        if(snapshot.connectionState == ConnectionState.waiting){
-                                          return const Text("Loading", style: TextStyle(color: Colors.white),);
-                                        }
-
-                                        return Text(snapshot.data!, style: TextStyle(color: Colors.white),);
-
-                                      },
-                                    )
-                                  ],
-                                ),
-                              ],
-                            ),
-
-                          ],
-                        ),
-                      ),
-                    );
+                      );
+                    }
+                    return SizedBox();
                   },
                 );
               },

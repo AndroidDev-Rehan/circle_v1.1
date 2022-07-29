@@ -81,7 +81,7 @@ class _SearchUsersScreenState extends State<SearchUsersScreen> {
                           ),
                         );
                       }
-                      return SizedBox();
+                      return const SizedBox();
 
                       },
                   );

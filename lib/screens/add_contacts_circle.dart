@@ -15,7 +15,7 @@ import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 ///Add contacts and send requests for adding them in circle / group
 
 class AddContactsScreen extends StatefulWidget {
-  AddContactsScreen({Key? key, required this.room}) : super(key: key);
+  AddContactsScreen({Key? key, required this.room,}) : super(key: key);
   final types.Room room;
 
   @override

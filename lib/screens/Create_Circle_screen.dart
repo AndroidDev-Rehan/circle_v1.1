@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:get/get.dart';
 import 'add_contacts_circle.dart';
+import 'chat_core/add_group_members.dart';
 import 'login.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
@@ -45,7 +46,9 @@ Map<String,dynamic> _circleToJson(Circle instance) =>
     };
 
 class CreateCirclePage extends StatefulWidget {
-  const CreateCirclePage({Key? key}) : super(key: key);
+  final bool childCircle;
+  final types.Room? parentRoom;
+  const CreateCirclePage({Key? key, this.childCircle = false, this.parentRoom}) : super(key: key);
   @override
   State<CreateCirclePage> createState() => CreateCircleState();
 }
@@ -167,10 +170,15 @@ class CreateCircleState extends State<CreateCirclePage>{
                         ),
                       )  : ElevatedButton(
                           onPressed: () async{
+                            if (!widget.childCircle){
+                                await createCircle(context);
+                              }
+                            else {
+                              await createChildCircle(context);
+                            }
 
-                            await createGroup(context);
 
-                        }, child: const Text("Submit"))
+                            }, child: const Text("Submit"))
                       ],
                     ),
                   )
@@ -182,7 +190,7 @@ class CreateCircleState extends State<CreateCirclePage>{
     );
   }
 
-  Future<void> createGroup(BuildContext context) async{
+  Future<void> createCircle(BuildContext context) async{
     if(_formKey.currentState!.validate()){
 
       setState((){
@@ -213,5 +221,63 @@ class CreateCircleState extends State<CreateCirclePage>{
 
     }
   }
+
+  Future<void> createChildCircle(BuildContext context) async{
+    if(_formKey.currentState!.validate()){
+
+      setState((){
+        loading = true;
+      });
+
+      try {
+        types.Room innerRoom = await FirebaseChatCore.instance.createGroupRoom(
+            name: textControllerName.text,
+            users: <types.User>[],
+            imageUrl:
+            "https://thumbs.dreamstime.com/b/linear-group-icon-customer-service-outline-collection-thin-line-vector-isolated-white-background-138644548.jpg",
+            metadata: {
+              "group": true,
+              "isChildCircle" : true
+
+            });
+
+        Map map = widget.parentRoom!.metadata ?? {};
+
+        List childCircles = map["childCircles"] ?? [];
+        childCircles.add(innerRoom.id);
+
+        map["childCircles"] = childCircles;
+
+        await FirebaseFirestore.instance.collection("rooms").doc(widget.parentRoom!.id).update(
+          {
+            "metadata" : map
+          }
+        );
+
+        print(innerRoom.id);
+
+        // for (int i=0; i<widget.parentRoom!.users.length; i++){
+        //   print(widget.parentRoom!.users[i].firstName);
+        // }
+
+        Get.off(
+            AddMembersScreen(
+              groupRoom: widget.parentRoom!,
+              innerRoom: innerRoom,
+            ));
+      }
+      catch(e){
+        Get.snackbar("Error", e.toString());
+      }
+
+      if(mounted){
+        setState(() {
+          loading = false;
+        });
+      }
+
+    }
+  }
+
 
 }

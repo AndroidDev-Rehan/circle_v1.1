@@ -1,8 +1,10 @@
 import 'package:circle/group_controller.dart';
+import 'package:circle/screens/chat_core/chat.dart';
 import 'package:circle/screens/chat_core/group_info.dart';
 
 import 'package:circle/widgets/select_user_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -10,8 +12,9 @@ import 'package:flutter_firebase_chat_core/flutter_firebase_chat_core.dart';
 import 'package:get/get.dart';
 
 class AddMembersScreen extends StatefulWidget {
-  const AddMembersScreen({Key? key, required this.groupRoom}) : super(key: key);
+  const AddMembersScreen({Key? key, required this.groupRoom, this.innerRoom}) : super(key: key);
   final types.Room groupRoom;
+  final types.Room? innerRoom;
 
   @override
   State<AddMembersScreen> createState() => _AddMembersScreenState();
@@ -38,7 +41,6 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
         Expanded(
           child: StreamBuilder<List<types.User>>(
             stream: FirebaseChatCore.instance.users(),
-            initialData: const [],
             builder: (context, AsyncSnapshot<List<types.User>> snapshot) {
               if (!snapshot.hasData || snapshot.data!.isEmpty) {
                 return Container(
@@ -50,14 +52,34 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
                 );
               }
 
+              List<String> userIds = widget.groupRoom.users.map((types.User user) => user.id).toList();
+
               // print(snapshot.data!);
 
-              return ListView.builder(
+              for(int i = 0; i<widget.groupRoom.users.length; i++){
+                print(widget.groupRoom.users[i].firstName);
+              }
+
+              return (widget.innerRoom!=null) ?
+              ListView.builder(
                 itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
+                itemBuilder:  (context, index) {
                   final user = snapshot.data![index];
 
-                  if(widget.groupRoom.users.contains(user)){
+                  if( (!(userIds.contains(user.id)) ) || (user.id==FirebaseAuth.instance.currentUser!.uid)){
+                    return const SizedBox();
+                  }
+
+                  return SelectUserWidget(user: user);
+                },
+              ) :
+
+              ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder:  (context, index) {
+                  final user = snapshot.data![index];
+
+                  if(userIds.contains(user.id)){
                     return const SizedBox();
                   }
 
@@ -81,11 +103,16 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
       child: ElevatedButton(
         child: Text("Add to Circle".toUpperCase()),
         onPressed: () async{
-          await addMembers();
-          Get.off(
-            GroupInfoScreen(groupRoom: widget.groupRoom)
-          );
-        },
+          if(widget.innerRoom==null){
+                      await addMembers();
+                      Get.off(GroupInfoScreen(groupRoom: widget.groupRoom));
+                    }
+          else{
+            await addMembersInnerCircle();
+            Get.off(ChatPage(room: widget.innerRoom!,groupChat: true,));
+
+          }
+                  },
       ),
     ),
   );
@@ -121,6 +148,42 @@ class _AddMembersScreenState extends State<AddMembersScreen> {
   }
 
 
+  Future<void> addMembersInnerCircle() async{
+
+    widget.innerRoom!.users.addAll(GroupController.selectedUsers);
+
+    List<String> userIds = widget.innerRoom!.users.map((types.User user) => user.id).toList();
+
+    setState((){
+      loading = true;
+    });
+
+    try {
+      // await FirebaseFirestore.instance.collection("rooms")
+      //     .doc(widget.groupRoom.id)
+      //     .update({"users": userIds});
+      await FirebaseFirestore.instance.collection("rooms")
+          .doc(widget.innerRoom!.id)
+          .update({"userIds": userIds});
+
+    }
+    catch(e){
+      print(e);
+    }
+
+    setState((){
+      loading = false;
+    });
+
+
+  }
+
+
+  @override
+  void dispose(){
+    GroupController.selectedUsers.clear();
+    super.dispose();
+  }
 
 }
 

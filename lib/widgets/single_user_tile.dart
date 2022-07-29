@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 class SingleUserTile extends StatefulWidget {
-  const SingleUserTile({Key? key, required this.user, required this.groupRoom}) : super(key: key);
+  const SingleUserTile({Key? key, required this.user, required this.groupRoom, this.hideDelete = false}) : super(key: key);
 
   final types.User user;
   final types.Room groupRoom;
+  final bool hideDelete;
 
   @override
   State<SingleUserTile> createState() => _SingleUserTileState();
@@ -31,11 +32,17 @@ class _SingleUserTileState extends State<SingleUserTile> {
           Text(getUserName(widget.user)),
           Spacer(),
           !loading ?
-          InkWell(
-            onTap: () async{
-              await removeMember();
-            },
-              child: Icon(Icons.delete_outline)
+          Visibility(
+            visible: widget.hideDelete ? false : true,
+            maintainState: true,
+            maintainSize: true,
+            maintainAnimation: true,
+            child: InkWell(
+              onTap: () async{
+                await removeMember();
+              },
+                child: Icon(Icons.delete_outline)
+            ),
           ) : SizedBox(
             height: 30,
             width: 30,

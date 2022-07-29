@@ -68,27 +68,27 @@ class ViewRequestsPage extends StatelessWidget {
       final String id = allRoomsCollection.docs[i].id;
 
       if(map["requests"] == null){
-        print("continuing $i, id: $id");
+        // print("continuing $i, id: $id");
         continue;
       }
-
-      print("not continuing $i, id: $id");
+      //
+      // print("not continuing $i, id: $id");
 
       // print((map['requests']).runtimeType);
 
       final List requests = map["requests"] ?? [];
 
-      print("passed $i");
-      print(requests);
+      // print("passed $i");
+      // print(requests);
       // print(object)
 
       if(requests.contains(FirebaseAuth.instance.currentUser!.uid)){
-        print("trying");
-        print(map);
+        // print("trying");
+        // print(map);
         roomsList.add( await FirebaseChatCore.instance.room(allRoomsCollection.docs[i].id).first );
       }
 
-      print("loop $i ended");
+      // print("loop $i ended");
 
 
     }
