@@ -9,7 +9,7 @@ class DynamicLinkHelper{
       uriPrefix: "https://circledev.page.link",
       androidParameters: const AndroidParameters(
           packageName: "com.example.circle", minimumVersion: 1),
-      iosParameters: const IOSParameters(bundleId: "com.example.circle"),
+      iosParameters: const IOSParameters(bundleId: "com.zaradustraglobal.circle"),
       // longDynamicLink: Uri.parse("https://circledev.page.link/circle?id=120")
     );
 
