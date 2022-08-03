@@ -43,6 +43,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         future: _generateLink(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
+            print("into waiting");
             return  Scaffold(
                 appBar: AppBar(
                   title: const Text("Circle Info"),
@@ -249,11 +250,11 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   Future<void> _generateLink() async {
-    if ((widget.groupRoom.metadata != null) &&
-        (widget.groupRoom.metadata!['link'] != null)) {
-      circleLink = widget.groupRoom.metadata!['link'];
-      return;
-    }
+    // if ((widget.groupRoom.metadata != null) &&
+    //     (widget.groupRoom.metadata!['link'] != null)) {
+    //   circleLink = widget.groupRoom.metadata!['link'];
+    //   return;
+    // }
 
     circleLink = await DynamicLinkHelper.createDynamicLink(widget.groupRoom.id);
 
