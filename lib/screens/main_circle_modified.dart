@@ -466,7 +466,7 @@ class MainCircleState extends State<MainCircle> {
                       CupertinoIcons.add,
                       color: Colors.white,
                     ),
-                    title: Text(
+                    title: const Text(
                       "Create a Circle",
                       textScaleFactor: 1.2,
                       style: TextStyle(
