@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'chat_core/rooms.dart';
 import 'chat_core/view_requests_page.dart';
 import 'login.dart';
+import 'package:flutter/services.dart';
 
 class MainCircle extends StatefulWidget {
   const MainCircle({Key? key}) : super(key: key);
@@ -177,10 +178,45 @@ class MainCircleState extends State<MainCircle> {
                     ),
                     ListTile(
                       leading: Icon(
+                        Icons.copy_outlined,
+                        color: Colors.white,
+                      ),
+                      title: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Copy UID",
+                            textScaleFactor: 1.2,
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 2,),
+                          Text(
+                            FirebaseAuth.instance.currentUser!.uid,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12
+                            ),
+                          ),
+
+                        ],
+                      ),
+                      onTap: ()async{
+                        await Clipboard.setData( ClipboardData(text: FirebaseAuth.instance.currentUser!.uid));
+                        Get.snackbar("Success", "UID copied", backgroundColor: Colors.white);
+                        // Get.back();
+                        // Get.to(UsersPage());
+                      },
+
+                    ),
+                    ListTile(
+                      leading: const Icon(
                         Icons.logout,
                         color: Colors.white,
                       ),
-                      title: Text(
+                      title: const Text(
                         "Log Out",
                         textScaleFactor: 1.2,
                         style: TextStyle(

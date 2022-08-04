@@ -80,9 +80,11 @@ class _SingleUserTileState extends State<SingleUserTile> {
     widget.groupRoom.users.removeWhere((types.User user) => (user.id == widget.user.id));
     List<String> userIds = widget.groupRoom.users.map((types.User user) => user.id).toList();
 
-    setState((){
-      loading = true;
-    });
+    if(mounted){
+      setState(() {
+        loading = true;
+      });
+    }
 
     try {
       await FirebaseFirestore.instance.collection("rooms")
@@ -95,11 +97,11 @@ class _SingleUserTileState extends State<SingleUserTile> {
       print(e);
     }
 
-    setState((){
-      loading = false;
-    });
-
-
+    if(mounted){
+      setState(() {
+        loading = false;
+      });
+    }
   }
 
 

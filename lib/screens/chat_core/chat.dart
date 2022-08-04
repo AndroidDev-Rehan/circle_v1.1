@@ -186,7 +186,7 @@ class _ChatPageState extends State<ChatPage> {
       context: context,
       builder: (BuildContext context) => SafeArea(
         child: SizedBox(
-          height: 144,
+          height: 250,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -197,9 +197,31 @@ class _ChatPageState extends State<ChatPage> {
                 },
                 child: const Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Photo'),
+                  child: Text('Photo (Gallery)'),
                 ),
               ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleImageSelection(camera: true);
+                },
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Photo (Camera)'),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _handleImageSelection(video: true);
+                },
+                child: const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Video (Camera)'),
+                ),
+              ),
+
+
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
@@ -260,12 +282,50 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _handleImageSelection() async {
-    final result = await ImagePicker().pickImage(
+  void _handleImageSelection({bool camera = false, bool video = false}) async {
+    final result =
+    (!video) ?
+(    await ImagePicker().pickImage(
       imageQuality: 70,
       maxWidth: 1440,
-      source: ImageSource.gallery,
-    );
+      source: camera ? ImageSource.camera : ImageSource.gallery,
+    )
+) : (await ImagePicker().pickVideo(
+      maxDuration: Duration(seconds: 30),
+      source: ImageSource.camera
+    ));
+
+    if (result != null && video==true) {
+      _setAttachmentUploading(true);
+      final name = result.name;
+      final filePath = result.path;
+      final file = File(filePath);
+
+      try {
+        final reference = FirebaseStorage.instance.ref(name);
+        await reference.putFile(file);
+        final uri = await reference.getDownloadURL();
+
+        final message = types.PartialFile(
+          mimeType: lookupMimeType(filePath),
+          name: name,
+          size: file.statSync().size,
+          uri: uri,
+        );
+
+        FirebaseChatCore.instance.sendMessage(message, widget.room.id);
+        _setAttachmentUploading(false);
+
+        await FirebaseFirestore.instance
+            .collection("rooms")
+            .doc(widget.room.id)
+            .update({"lastMsg": "file"});
+      } finally {
+        _setAttachmentUploading(false);
+      }
+      return;
+    }
+
 
     if (result != null) {
       _setAttachmentUploading(true);
