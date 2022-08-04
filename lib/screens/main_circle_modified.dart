@@ -23,6 +23,11 @@ class MainCircle extends StatefulWidget {
 }
 
 class MainCircleState extends State<MainCircle> {
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey1 = new GlobalKey<ScaffoldState>();
+
+
   int index = 0;
   @override
   State<MainCircle> createState() => MainCircleState();
@@ -53,7 +58,7 @@ class MainCircleState extends State<MainCircle> {
   @override
   Widget build(BuildContext context) {
 
-    print(FirebaseChatCore.instance.firebaseUser);
+    // print(FirebaseChatCore.instance.firebaseUser);
 
     // TODO: implement build
     return DefaultTabController(
@@ -71,6 +76,7 @@ class MainCircleState extends State<MainCircle> {
           }
 
           return Scaffold(
+            key: _scaffoldKey,
             drawer: Drawer(
               child: Container(
                 color: Colors.blue,
@@ -268,7 +274,7 @@ class MainCircleState extends State<MainCircle> {
                   ),
                   InkWell(
                     onTap: () {
-                      print("Hiragino Kaku Gothic ProN");
+                      // print("Hiragino Kaku Gothic ProN");
                       Get.to(const SearchChatScreen());
                     },
                     child: const Padding(
@@ -288,7 +294,7 @@ class MainCircleState extends State<MainCircle> {
                           size: 25.0,
                         ),
                         onPressed: () async {
-                          print('Clicked Refresh in Main Window');
+                          // print('Clicked Refresh in Main Window');
                         }),
                   ),
                 ],
@@ -347,10 +353,17 @@ class MainCircleState extends State<MainCircle> {
               bottomNavigationBar: BottomNavigationBar(
                 backgroundColor: Colors.blue[600],
                 onTap: (index) {
-                  setState(() {
-                    this.index = index;
-                  });
-                  if (this.index == 2) {
+                  print("hi $index");
+                  // print(index);
+                  // setState(() {
+                  //   this.index = index;
+                  // });
+
+                  if(index == 1){
+                    _scaffoldKey.currentState!.openDrawer();
+                  }
+
+                  else if (index == 2) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => RoomsPage()),
@@ -378,6 +391,7 @@ class MainCircleState extends State<MainCircle> {
               ));
         }
       ) : Scaffold(
+        key: _scaffoldKey1,
           drawer: Drawer(
             child: Container(
               color: Colors.blue,
@@ -540,7 +554,7 @@ class MainCircleState extends State<MainCircle> {
               ),
               InkWell(
                 onTap: () {
-                  print("Hiragino Kaku Gothic ProN");
+                  // print("Hiragino Kaku Gothic ProN");
                   Get.to(const SearchChatScreen());
                 },
                 child: const Padding(
@@ -560,7 +574,7 @@ class MainCircleState extends State<MainCircle> {
                       size: 25.0,
                     ),
                     onPressed: () async {
-                      print('Clicked Refresh in Main Window');
+                      // print('Clicked Refresh in Main Window');
                     }),
               ),
             ],
@@ -619,10 +633,16 @@ class MainCircleState extends State<MainCircle> {
           bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Colors.blue[600],
             onTap: (index) {
-              setState(() {
-                this.index = index;
-              });
-              if (this.index == 2) {
+              print("hi");
+              // setState(() {
+              //   this.index = index;
+              // });
+
+              if(index == 1){
+                _scaffoldKey1.currentState!.openDrawer();
+              }
+
+              else if (index == 2) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => RoomsPage()),
@@ -705,7 +725,7 @@ class MainCircleState extends State<MainCircle> {
         letterSpacing: 1.0,
       ),
       onTap: (index) {
-        print("\nIndex is:$index");
+        // print("\nIndex is:$index");
         if (mounted) {
           setState(() {
             _currentIndex = index;
@@ -760,7 +780,7 @@ class NavigationBarItem extends StatelessWidget {
     // TODO: implement build
     return GestureDetector(
       onTap: () {
-        print('context');
+        // print('context');
       },
       child: SizedBox(
         height: 70,
