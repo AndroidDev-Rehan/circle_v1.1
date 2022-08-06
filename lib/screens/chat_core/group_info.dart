@@ -1,4 +1,6 @@
 import 'package:circle/group_info_controller.dart';
+import 'package:circle/screens/add_event_screen.dart';
+import 'package:circle/screens/calendar_list_events.dart';
 import 'package:circle/screens/chat_core/add_group_members.dart';
 import 'package:circle/screens/chat_core/view_nested_rooms.dart';
 import 'package:circle/utils/dynamiclink_helper.dart';
@@ -38,12 +40,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.groupRoom.metadata);
+    // print(widget.groupRoom.metadata);
     return FutureBuilder(
         future: _generateLink(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            print("into waiting");
+            // print("into waiting");
             return Scaffold(
               appBar: AppBar(
                 title: const Text("Circle Info"),
@@ -140,23 +142,30 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                                 (widget.groupRoom.metadata!["isChildCircle"] ??
                                     false))
                             ? SizedBox()
-                            : ElevatedButton(
-                                onPressed: () {
-                                  Get.off(AddMembersScreen(
-                                      groupRoom: widget.groupRoom));
-                                },
-                                child: const Text("Add Members")),
+                            : Expanded(
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    Get.off(AddMembersScreen(
+                                        groupRoom: widget.groupRoom));
+                                  },
+                                  child: const Text("Add Members")),
+                            ),
+                        SizedBox(width: (widget.groupRoom.metadata != null) &&
+                            (widget.groupRoom.metadata!["isChildCircle"] ??
+                                false)? 0 : 20,height: 0,),
                         ((widget.groupRoom.metadata != null) &&
                                 (widget.groupRoom.metadata!["isChildCircle"] ??
                                     false))
                             ? const SizedBox()
-                            : ElevatedButton(
-                                onPressed: () {
-                                  Get.off(ViewNestedRoom(
-                                      user: FirebaseAuth.instance.currentUser!,
-                                      parentRoom: widget.groupRoom));
-                                },
-                                child: const Text("View Inner Circles"))
+                            : Expanded(
+                              child: ElevatedButton(
+                                  onPressed: () {
+                                    Get.off(ViewNestedRoom(
+                                        user: FirebaseAuth.instance.currentUser!,
+                                        parentRoom: widget.groupRoom));
+                                  },
+                                  child: const Text("View Inner Circles")),
+                            )
                       ],
                     ),
                     const SizedBox(
@@ -164,71 +173,23 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     ),
                     Row(
                       children: [
-                        ElevatedButton(
-                            onPressed: () async {
-                              TextEditingController idController =
-                                  TextEditingController();
-                              Map? userMap;
-                              await showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                        title: Text('Enter User Id'),
-                                        content: TextFormField(
-                                          controller: idController,
-                                          decoration: const InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            focusedBorder: OutlineInputBorder(),
-                                            enabledBorder: OutlineInputBorder(),
-                                            isDense: true,
-                                          ),
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text("Cancel")),
-                                          ElevatedButton(
-                                              onPressed: () async {
-                                                DocumentSnapshot<Map>
-                                                    documentSnapshot =
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection("users")
-                                                        .doc(idController.text)
-                                                        .get();
-                                                userMap =
-                                                    documentSnapshot.data();
-                                                Navigator.pop(context);
-                                              },
-                                              child: Text("Confirm"))
-                                        ],
-                                      ));
-
-                              if (userMap != null) {
+                        Expanded(
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                TextEditingController idController =
+                                    TextEditingController();
+                                Map? userMap;
                                 await showDialog(
                                     context: context,
                                     builder: (_) => AlertDialog(
-                                          title: const Text('User Found'),
-                                          content: Container(
-                                            margin: const EdgeInsets.only(
-                                                right: 16),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                CircleAvatar(
-                                                  // backgroundColor: hasImage ? Colors.transparent : color,
-                                                  backgroundImage: NetworkImage(
-                                                      userMap!["imageUrl"]),
-                                                  radius: 40,
-                                                  child: null,
-                                                ),
-                                                const SizedBox(
-                                                  height: 15,
-                                                ),
-                                                Text(
-                                                    "${userMap!['firstName']} ${userMap!['lastName']}")
-                                              ],
+                                          title: Text('Enter User Id'),
+                                          content: TextFormField(
+                                            controller: idController,
+                                            decoration: const InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              focusedBorder: OutlineInputBorder(),
+                                              enabledBorder: OutlineInputBorder(),
+                                              isDense: true,
                                             ),
                                           ),
                                           actions: [
@@ -239,39 +200,93 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                                                 child: Text("Cancel")),
                                             ElevatedButton(
                                                 onPressed: () async {
-                                                  try {
-                                                    // await FirebaseFirestore.instance.collection("rooms")
-                                                    //     .doc(widget.groupRoom.id)
-                                                    //     .update({"users": userIds});
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection("rooms")
-                                                        .doc(
-                                                            widget.groupRoom.id)
-                                                        .update({
-                                                      "userIds": FieldValue
-                                                          .arrayUnion([
-                                                        idController.text
-                                                      ])
-                                                    });
-                                                    Navigator.pop(context);
-                                                    Get.snackbar("Success",
-                                                        "${userMap!['firstName']} is added to circle", backgroundColor: Colors.white);
-                                                  } catch (e) {
-                                                    Get.snackbar(
-                                                        "error", e.toString());
-                                                    print(e);
-                                                  }
+                                                  DocumentSnapshot<Map>
+                                                      documentSnapshot =
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection("users")
+                                                          .doc(idController.text)
+                                                          .get();
+                                                  userMap =
+                                                      documentSnapshot.data();
+                                                  Navigator.pop(context);
                                                 },
-                                                child: Text("Add"))
+                                                child: Text("Confirm"))
                                           ],
                                         ));
-                              }
-                              else{
-                                Get.snackbar("Sorry", "No user found", backgroundColor: Colors.white);
-                              }
-                            },
-                            child: const Text("Add User by uid")),
+
+                                if (userMap != null) {
+                                  await showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                            title: const Text('User Found'),
+                                            content: Container(
+                                              margin: const EdgeInsets.only(
+                                                  right: 16),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CircleAvatar(
+                                                    // backgroundColor: hasImage ? Colors.transparent : color,
+                                                    backgroundImage: NetworkImage(
+                                                        userMap!["imageUrl"]),
+                                                    radius: 40,
+                                                    child: null,
+                                                  ),
+                                                  const SizedBox(
+                                                    height: 15,
+                                                  ),
+                                                  Text(
+                                                      "${userMap!['firstName']} ${userMap!['lastName']}")
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              ElevatedButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Text("Cancel")),
+                                              ElevatedButton(
+                                                  onPressed: () async {
+                                                    try {
+                                                      // await FirebaseFirestore.instance.collection("rooms")
+                                                      //     .doc(widget.groupRoom.id)
+                                                      //     .update({"users": userIds});
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection("rooms")
+                                                          .doc(
+                                                              widget.groupRoom.id)
+                                                          .update({
+                                                        "userIds": FieldValue
+                                                            .arrayUnion([
+                                                          idController.text
+                                                        ])
+                                                      });
+                                                      Navigator.pop(context);
+                                                      Get.snackbar("Success",
+                                                          "${userMap!['firstName']} is added to circle", backgroundColor: Colors.white);
+                                                    } catch (e) {
+                                                      Get.snackbar(
+                                                          "error", e.toString());
+                                                      print(e);
+                                                    }
+                                                  },
+                                                  child: Text("Add"))
+                                            ],
+                                          ));
+                                }
+                                else{
+                                  Get.snackbar("Sorry", "No user found", backgroundColor: Colors.white);
+                                }
+                              },
+                              child: const Text("Add User by uid")),
+                        ),
+                        SizedBox(width: 20,),
+                        Expanded(child: ElevatedButton(onPressed: (){
+                          Get.to(CalendarListEventsScreen(circleId: widget.groupRoom.id));
+                        }, child: Text("View Circle Events")))
                       ],
                     ),
                     const SizedBox(
@@ -376,7 +391,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                   child: const Text("Save Info"),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      print("hello");
+                      // print("hello");
                       await _updateGroupName();
                       Get.offAll(
                         const MainCircle(),
